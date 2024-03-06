@@ -18,9 +18,11 @@ async function bootstrap() {
     .setDescription('我的blog api 文档')
     .setVersion('1.0')
     .addTag('blog')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/doc', app, document);
   await app.listen(3303);
+  console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();
