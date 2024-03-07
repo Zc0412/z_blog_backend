@@ -27,7 +27,7 @@ export class RegisterDto {
   @MinLength(4)
   @MaxLength(20)
   @Matches(passwordReg, {
-    message: '必须包含数字、小写字母、大写字母',
+    message: '密码必须包含数字、小写字母、大写字母',
   })
   password: string;
 
@@ -36,7 +36,7 @@ export class RegisterDto {
   @Match('password', { message: '密码不一致' })
   passwordConfirm: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
   avatar?: string;

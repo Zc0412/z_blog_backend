@@ -2,10 +2,11 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { CreateUserDto } from '../users/dto/create-user.dto';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { SkipAuth } from '../shared/decorator/auth.decorator';
 
 @ApiTags('鉴权')
+@SkipAuth()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -22,6 +23,7 @@ export class AuthController {
     });
   }
 
+  @ApiBody({ type: LoginDto })
   @Post('login')
   async login(@Body() login: LoginDto) {
     return this.authService.login(login);

@@ -23,7 +23,7 @@ export class AuthService {
     // 校验邮箱
     const hasEmail = await this.findUniqueEmail(loginDto.email);
     if (!hasEmail) {
-      throw new NotFoundException('邮箱不存在');
+      throw new NotFoundException('邮箱或密码不正确');
     }
     // 校验密码
     const _comparePasswords = await comparePasswords(
@@ -31,7 +31,7 @@ export class AuthService {
       hasEmail.password,
     );
     if (!_comparePasswords) {
-      throw new NotFoundException('密码错误');
+      throw new NotFoundException('邮箱或密码不正确');
     }
     const { password, ...userInfo } = hasEmail;
     // 生成token
@@ -68,7 +68,7 @@ export class AuthService {
    * 查找邮箱是否存在
    * @param email
    */
-  async findUniqueEmail(email: string) {
+  async findUniqueEmail(email: string): Promise<Prisma.UserCreateInput> {
     return this.prismaService.user.findUnique({ where: { email } });
   }
 
@@ -77,7 +77,7 @@ export class AuthService {
    * @param id
    */
   async certificate(id: string): Promise<string> {
-    const payload = { id };
+    const payload = { sub: id };
     return await this.jwtService.signAsync(payload);
   }
 }

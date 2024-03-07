@@ -18,7 +18,7 @@ export class LoginDto {
   @MinLength(4)
   @MaxLength(20)
   @Matches(passwordReg, {
-    message: '必须包含数字、小写字母、大写字母',
+    message: '密码必须包含数字、小写字母、大写字母',
   })
   password: string;
 }

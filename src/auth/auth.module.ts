@@ -8,6 +8,7 @@ import { SharedModule } from '../shared/shared.module';
 @Module({
   imports: [
     JwtModule.registerAsync({
+      global: true,
       imports: [SharedModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
