@@ -1,19 +1,51 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import Redis from 'ioredis';
 import { JwtService } from '@nestjs/jwt';
-import { LoginDto } from './dto/login.dto';
+import { InjectRedis } from '@nestjs-modules/ioredis';
+import { CodeLoginDto, LoginDto } from './dto/login.dto';
 import { PrismaService } from '../shared/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import {
   comparePasswords,
   hashPassword,
 } from '../shared/utils/bcryptHash.util';
+import { MailService } from '../shared/mail/mail.service';
+import { MailDto } from '../shared/mail/dto/mail.dto';
+import { EMAIL_CODE_REDIS_CACHE_TIME } from '../shared/config/constant';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private prismaService: PrismaService,
+    private mailService: MailService,
+    @InjectRedis() private readonly redis: Redis,
   ) {}
+
+  /**
+   * 验证码登录
+   * @param codeLoginDto
+   */
+  async codeLogin(codeLoginDto: CodeLoginDto) {
+    // 是否存在邮箱
+    const hasEmail = await this.findUniqueEmail(codeLoginDto.email);
+    if (!hasEmail) {
+      throw new NotFoundException('邮箱不存在');
+    }
+    // 是否存在验证码
+    const hasCode = await this.redis.get(codeLoginDto.email);
+    if (!hasCode) {
+      throw new NotFoundException('验证码已过期');
+    }
+    // 校验验证码是否正确
+    if (hasCode !== codeLoginDto.code) {
+      throw new NotFoundException('验证码错误');
+    }
+    const { password, ...userInfo } = hasEmail;
+    // 生成token
+    const accessToken = await this.certificate(userInfo.id);
+    return { accessToken, ...userInfo };
+  }
 
   /**
    * 登录
@@ -79,5 +111,29 @@ export class AuthService {
   async certificate(id: string): Promise<string> {
     const payload = { sub: id };
     return await this.jwtService.signAsync(payload);
+  }
+
+  /**
+   * 邮箱验证码服务
+   * @param mailDto
+   */
+  async mailCode(mailDto: Pick<MailDto, 'email'>) {
+    const hasEmail = await this.findUniqueEmail(mailDto.email);
+    if (!hasEmail) {
+      throw new NotFoundException('邮箱不存在');
+    }
+    // 生成随机验证码
+    const mailCode = Math.random().toString().slice(2, 8);
+    // 存储在redis中 设置缓存时间为5分钟
+    const res = await this.redis.set(
+      mailDto.email,
+      mailCode,
+      'EX',
+      EMAIL_CODE_REDIS_CACHE_TIME,
+    );
+    console.log(res);
+    console.log('MAIL_CODE:', mailCode);
+    const _mailDto = { ...mailDto, mailCode };
+    return await this.mailService.sendMail(_mailDto);
   }
 }
