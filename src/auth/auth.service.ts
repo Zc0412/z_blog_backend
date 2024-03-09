@@ -2,7 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import Redis from 'ioredis';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRedis } from '@nestjs-modules/ioredis';
-import { CodeLoginDto, LoginDto } from './dto/login.dto';
+import * as svgCaptcha from 'svg-captcha';
+import { CodeLoginDto, ImageCodeLoginDto, LoginDto } from './dto/login.dto';
 import { PrismaService } from '../shared/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import {
@@ -11,7 +12,10 @@ import {
 } from '../shared/utils/bcryptHash.util';
 import { MailService } from '../shared/mail/mail.service';
 import { MailDto } from '../shared/mail/dto/mail.dto';
-import { EMAIL_CODE_REDIS_CACHE_TIME } from '../shared/config/constant';
+import {
+  EMAIL_CODE_REDIS_CACHE_TIME,
+  IMAGE_CODE_REDIS_CACHE_TIME,
+} from '../shared/config/constant';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +25,28 @@ export class AuthService {
     private mailService: MailService,
     @InjectRedis() private readonly redis: Redis,
   ) {}
+
+  // 图片验证码登录
+  async imageCodeLogin(imageCodeLoginDto: ImageCodeLoginDto) {
+    // 是否存在邮箱
+    const hasEmail = await this.findUniqueEmail(imageCodeLoginDto.email);
+    if (!hasEmail) {
+      throw new NotFoundException('邮箱不存在');
+    }
+    // 是否存在验证码
+    const hasCode = await this.redis.get(imageCodeLoginDto.code);
+    if (!hasCode) {
+      throw new NotFoundException('验证码已过期');
+    }
+    // 校验验证码是否正确
+    if (hasCode !== imageCodeLoginDto.code) {
+      throw new NotFoundException('验证码错误');
+    }
+    const { password, ...userInfo } = hasEmail;
+    // 生成token
+    const accessToken = await this.certificate(userInfo.id);
+    return { accessToken, ...userInfo };
+  }
 
   /**
    * 验证码登录
@@ -125,15 +151,45 @@ export class AuthService {
     // 生成随机验证码
     const mailCode = Math.random().toString().slice(2, 8);
     // 存储在redis中 设置缓存时间为5分钟
-    const res = await this.redis.set(
+    await this.redis.set(
       mailDto.email,
       mailCode,
       'EX',
       EMAIL_CODE_REDIS_CACHE_TIME,
     );
-    console.log(res);
     console.log('MAIL_CODE:', mailCode);
     const _mailDto = { ...mailDto, mailCode };
     return await this.mailService.sendMail(_mailDto);
+  }
+
+  /**
+   * 缓存和生成图片验证
+   */
+  async svgCaptcha() {
+    const { svgCaptchaText, svgCaptchaData } = this.createSvgCaptcha();
+    console.log('IMAGE_CODE:', svgCaptchaText);
+    // redis缓存图片验证码
+    await this.redis.set(
+      svgCaptchaText,
+      svgCaptchaText,
+      'EX',
+      IMAGE_CODE_REDIS_CACHE_TIME,
+    );
+    // 返回svg
+    return svgCaptchaData;
+  }
+
+  // 生成图片验证信息
+  createSvgCaptcha(): { svgCaptchaData: string; svgCaptchaText: string } {
+    // 创建验证码
+    const initialSvgCaptcha = svgCaptcha.create({
+      noise: 6,
+      color: true,
+    });
+    // 验证码结果
+    const svgCaptchaText = initialSvgCaptcha.text;
+    // svg
+    const svgCaptchaData = initialSvgCaptcha.data;
+    return { svgCaptchaData, svgCaptchaText };
   }
 }
