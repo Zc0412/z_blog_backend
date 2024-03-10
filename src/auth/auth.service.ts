@@ -3,9 +3,10 @@ import Redis from 'ioredis';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import * as svgCaptcha from 'svg-captcha';
+import { HttpService } from '@nestjs/axios';
+import { Prisma } from '@prisma/client';
 import { CodeLoginDto, ImageCodeLoginDto, LoginDto } from './dto/login.dto';
 import { PrismaService } from '../shared/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
 import {
   comparePasswords,
   hashPassword,
@@ -20,6 +21,7 @@ import {
 @Injectable()
 export class AuthService {
   constructor(
+    private httpService: HttpService,
     private jwtService: JwtService,
     private prismaService: PrismaService,
     private mailService: MailService,

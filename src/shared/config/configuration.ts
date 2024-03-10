@@ -16,4 +16,8 @@ export default () => ({
     type: 'single',
     url: process.env.UPSTASH_REDIS_URL,
   },
+  http: {
+    timeout: 5000,
+    maxRedirects: 5,
+  },
 });
