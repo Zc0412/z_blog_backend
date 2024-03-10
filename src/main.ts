@@ -4,7 +4,6 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  const test = 123;
   const app = await NestFactory.create(AppModule);
 
   // 数据校验
