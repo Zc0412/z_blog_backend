@@ -17,10 +17,12 @@ import {
   EMAIL_CODE_REDIS_CACHE_TIME,
   IMAGE_CODE_REDIS_CACHE_TIME,
 } from '../shared/config/constant';
+import { AppLoggerService } from '../shared/winston/logger.service';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private logger: AppLoggerService,
     private httpService: HttpService,
     private jwtService: JwtService,
     private prismaService: PrismaService,
@@ -47,6 +49,7 @@ export class AuthService {
     const { password, ...userInfo } = hasEmail;
     // 生成token
     const accessToken = await this.certificate(userInfo.id);
+    this.logger.info(null, `图片验证码登录:${userInfo.email}`);
     return { accessToken, ...userInfo };
   }
 
@@ -72,6 +75,7 @@ export class AuthService {
     const { password, ...userInfo } = hasEmail;
     // 生成token
     const accessToken = await this.certificate(userInfo.id);
+    this.logger.info(null, `邮箱验证码登录:${userInfo.email}`);
     return { accessToken, ...userInfo };
   }
 
@@ -96,6 +100,7 @@ export class AuthService {
     const { password, ...userInfo } = hasEmail;
     // 生成token
     const accessToken = await this.certificate(userInfo.id);
+    this.logger.info(null, `账号密码登录:${userInfo.email}`);
     return { accessToken, ...userInfo };
   }
 
@@ -118,6 +123,7 @@ export class AuthService {
     });
     // token
     const accessToken = await this.certificate(userInfo.id);
+    this.logger.info(null, `注册:${userInfo.email}`);
     return {
       accessToken,
       ...userInfo,
@@ -159,8 +165,8 @@ export class AuthService {
       'EX',
       EMAIL_CODE_REDIS_CACHE_TIME,
     );
-    console.log('MAIL_CODE:', mailCode);
     const _mailDto = { ...mailDto, mailCode };
+    this.logger.info(null, `邮箱验证码:${mailCode}`);
     return await this.mailService.sendMail(_mailDto);
   }
 
@@ -169,7 +175,6 @@ export class AuthService {
    */
   async svgCaptcha() {
     const { svgCaptchaText, svgCaptchaData } = this.createSvgCaptcha();
-    console.log('IMAGE_CODE:', svgCaptchaText);
     // redis缓存图片验证码
     await this.redis.set(
       svgCaptchaText,
@@ -177,6 +182,7 @@ export class AuthService {
       'EX',
       IMAGE_CODE_REDIS_CACHE_TIME,
     );
+    this.logger.info(null, `图片验证码:${svgCaptchaText}`);
     // 返回svg
     return svgCaptchaData;
   }

@@ -7,6 +7,7 @@ import configuration from './config/configuration';
 import { TransformInterceptor } from './interceptor/transform.interceptor';
 import { HttpExceptionFilter } from './filter/http-exception.filter';
 import { AuthGuard } from './guard/auth.guard';
+import { AppLoggerModule } from './winston/logger.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AuthGuard } from './guard/auth.guard';
     ConfigModule.forRoot({ envFilePath: '.env', load: [configuration] }),
     PrismaModule,
     HttpModule,
+    AppLoggerModule,
   ],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
