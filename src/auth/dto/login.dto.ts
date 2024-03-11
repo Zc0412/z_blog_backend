@@ -25,9 +25,22 @@ export class LoginDto {
 
 // 邮箱验证码登录
 export class CodeLoginDto {
+  @ApiProperty()
   @IsEmail()
   email: string;
 
+  @ApiProperty()
   @Matches(mailCodeReg, { message: '请输入6位验证码' })
+  code: string;
+}
+
+// 图片验证码
+export class ImageCodeLoginDto {
+  @ApiProperty()
+  @IsEmail()
+  email: string;
+
+  @ApiProperty()
+  @IsString()
   code: string;
 }

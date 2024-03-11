@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { HttpModule } from '@nestjs/axios';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
 import configuration from './config/configuration';
@@ -12,6 +13,7 @@ import { AuthGuard } from './guard/auth.guard';
     PrismaModule,
     ConfigModule.forRoot({ envFilePath: '.env', load: [configuration] }),
     PrismaModule,
+    HttpModule,
   ],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
