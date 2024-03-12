@@ -22,7 +22,7 @@ export class AppLoggerService {
           level: 'error',
           dirname: `logs`, // 日志保存的目录
           filename: 'error-%DATE%.log',
-          datePattern: 'YYYY-MM-DD-HH',
+          datePattern: 'YYYY-MM-DD',
           zippedArchive: true,
           maxSize: '20m',
           maxFiles: '14d',
