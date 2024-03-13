@@ -9,7 +9,7 @@ async function bootstrap() {
   });
 
   // 数据校验
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
   // 设置api prefix
   app.setGlobalPrefix('/api/v1');
