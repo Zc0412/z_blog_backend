@@ -15,6 +15,71 @@ model User {
   role      Role     @default(USER)
   userName  String
   createdAt DateTime @default(now())
+  profile   String?
+  posts     Post[]
+}
+
+model Post {
+  id         String     @id @default(uuid())
+  title      String
+  content    String
+  publishAt  DateTime   @default(now())
+  updateAt   DateTime   @updatedAt
+  status     PostStatus @default(DRAFT)
+  views      Int        @default(0)
+  authorId   String
+  categoryId String
+  author     User       @relation(fields: [authorId], references: [id])
+  category   Category   @relation(fields: [categoryId], references: [id])
+  visits     Visit[]
+  tags       Tag[]      @relation("PostToTag")
+
+  @@index([authorId], map: "Post_authorId_fkey")
+  @@index([categoryId], map: "Post_categoryId_fkey")
+}
+
+model Visit {
+  id        String   @id @default(uuid())
+  postId    String
+  userAgent String?
+  visitedAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id])
+
+  @@index([postId], map: "Visit_postId_fkey")
+}
+
+model Category {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+  posts       Post[]
+}
+
+model Tag {
+  id    String @id @default(uuid())
+  name  String @unique
+  posts Post[] @relation("PostToTag")
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  nickName  String
+  email     String    @unique
+  content   String
+  url       String
+  userAgent String?
+  createAt  DateTime  @default(now())
+  parentId  String?
+  parent    Comment?  @relation("CommentChildren", fields: [parentId], references: [id])
+  children  Comment[] @relation("CommentChildren")
+
+  @@index([parentId], map: "Comment_parentId_fkey")
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
 }
 
 enum Role {
