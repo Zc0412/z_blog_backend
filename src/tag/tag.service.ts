@@ -1,40 +1,49 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTagDto } from './dto/tag.dto';
-import { UpdateTagDto } from './dto/update-tag.dto';
 import { PrismaService } from '../shared/prisma/prisma.service';
 
 @Injectable()
 export class TagService {
   constructor(private prismaService: PrismaService) {}
+
+  /**
+   * 创建tag
+   * @param createTagDto
+   */
   async create(createTagDto: CreateTagDto) {
-    await this.findUniqueTag(createTagDto.name);
-    return this.prismaService.tag.create({ data: createTagDto });
-  }
-
-  findAll() {
-    return `This action returns all tag`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} tag`;
-  }
-
-  update(id: number, updateTagDto: UpdateTagDto) {
-    return `This action updates a #${id} tag`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} tag`;
-  }
-
-  // 查询tag是否存在
-  async findUniqueTag(name: string) {
     const tag = this.prismaService.tag.findUnique({
-      where: { name },
+      where: { name: createTagDto.name },
     });
     if (!tag) {
       throw new NotFoundException('name已存在');
     }
-    return tag;
+    return this.prismaService.tag.create({ data: createTagDto });
+  }
+
+  /**
+   * 查询所有tag
+   */
+  async findAll() {
+    return this.prismaService.tag.findMany();
+  }
+
+  /**
+   * 删除tag
+   * @param id
+   */
+  async remove(id: string) {
+    // 查找id是否存在
+    const tag = await this.prismaService.tag.findUnique({
+      where: {
+        id,
+      },
+    });
+    if (!tag) {
+      throw new NotFoundException('tag不存在');
+    }
+    // 删除tag
+    return this.prismaService.tag.delete({
+      where: { id },
+    });
   }
 }

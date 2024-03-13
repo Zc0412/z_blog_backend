@@ -13,8 +13,8 @@ model User {
   avatar    String?
   password  String
   role      Role     @default(USER)
-  userName  String
   createdAt DateTime @default(now())
+  userName  String
   profile   String?
   posts     Post[]
 }
