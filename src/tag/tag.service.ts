@@ -11,10 +11,10 @@ export class TagService {
    * @param createTagDto
    */
   async create(createTagDto: CreateTagDto) {
-    const tag = this.prismaService.tag.findUnique({
+    const tag = await this.prismaService.tag.findUnique({
       where: { name: createTagDto.name },
     });
-    if (!tag) {
+    if (tag) {
       throw new NotFoundException('name已存在');
     }
     return this.prismaService.tag.create({ data: createTagDto });
