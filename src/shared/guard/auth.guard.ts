@@ -40,6 +40,7 @@ export class AuthGuard implements CanActivate {
         this.configService.get('jwt'),
       );
       console.log(payload);
+      request['authorId'] = payload.sub;
     } catch {
       throw new UnauthorizedException();
     }

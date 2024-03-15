@@ -29,12 +29,12 @@ export class UserService {
         createdAt: 'desc',
       },
     });
+    // 用户数据
+    const items = excludeFieldsFromObjectsArray(users, ['password']);
     // 总条数
     const totalItems = await this.prismaService.user.count();
     // 总页数
     const totalPages = Math.ceil(totalItems / pageSize);
-    // 用户数据
-    const items = excludeFieldsFromObjectsArray(users, ['password']);
     return {
       data: items,
       pagination: {
