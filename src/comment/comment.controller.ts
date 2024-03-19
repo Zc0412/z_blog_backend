@@ -13,7 +13,6 @@ import { ApiOperation } from '@nestjs/swagger';
 import { Request } from 'express';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { UpdateCommentDto } from './dto/update-comment.dto';
 import { SkipAuth } from '../shared/decorator/auth.decorator';
 
 @Controller('comment')
@@ -33,9 +32,12 @@ export class CommentController {
     return this.commentService.create(createCommentDto);
   }
 
-  @Get()
-  findAll() {
-    return this.commentService.findAll();
+  @ApiOperation({
+    summary: '查询文章所有评论',
+  })
+  @Get(':id')
+  findAll(@Param('id') id: string) {
+    return this.commentService.findAll(id);
   }
 
   @Delete(':id')

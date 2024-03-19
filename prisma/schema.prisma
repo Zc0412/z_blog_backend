@@ -13,8 +13,8 @@ model User {
   avatar    String?
   password  String
   role      Role     @default(USER)
-  userName  String
   createdAt DateTime @default(now())
+  userName  String
   profile   String?
   posts     Post[]
 }
@@ -74,7 +74,7 @@ model Comment {
   postId    String
   parent    Comment?  @relation("CommentChildren", fields: [parentId], references: [id])
   children  Comment[] @relation("CommentChildren")
-  Post      Post      @relation(fields: [postId], references: [id])
+  post      Post      @relation(fields: [postId], references: [id])
 
   @@index([parentId], map: "Comment_parentId_fkey")
   @@index([postId], map: "Comment_postId_fkey")

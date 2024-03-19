@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { UpdateCommentDto } from './dto/update-comment.dto';
 import { PrismaService } from '../shared/prisma/prisma.service';
 
 @Injectable()
@@ -24,8 +23,25 @@ export class CommentService {
     });
   }
 
-  findAll() {
-    return `This action returns all comment`;
+  /**
+   * 依据post ID查询所有comment
+   */
+  async findAll(id: string) {
+    console.log(id);
+    return this.prismaService.comment.findMany({
+      where: {
+        postId: id,
+        parentId: null,
+      },
+      include: {
+        children: {
+          include: {
+            children: true, // 嵌套包含子评论的子评论
+            // 可以根据需要继续嵌套更多层级
+          },
+        },
+      },
+    });
   }
 
   remove(id: number) {
