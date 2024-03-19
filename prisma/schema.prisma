@@ -29,6 +29,7 @@ model Post {
   views      Int        @default(0)
   authorId   String
   categoryId String
+  comments   Comment[]
   author     User       @relation(fields: [authorId], references: [id])
   category   Category   @relation(fields: [categoryId], references: [id])
   visits     Visit[]
@@ -64,16 +65,19 @@ model Tag {
 model Comment {
   id        String    @id @default(uuid())
   nickName  String
-  email     String    @unique
+  email     String
   content   String
   url       String
   userAgent String?
   createAt  DateTime  @default(now())
   parentId  String?
+  postId    String
   parent    Comment?  @relation("CommentChildren", fields: [parentId], references: [id])
   children  Comment[] @relation("CommentChildren")
+  Post      Post      @relation(fields: [postId], references: [id])
 
   @@index([parentId], map: "Comment_parentId_fkey")
+  @@index([postId], map: "Comment_postId_fkey")
 }
 
 enum PostStatus {

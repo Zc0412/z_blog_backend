@@ -68,14 +68,54 @@ export class PostService {
       data: {
         views: { increment: 1 },
       },
+      include: {
+        tags: true,
+        category: true,
+        author: { select: { id: true, userName: true } },
+        visits: true,
+      },
     });
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
+  /**
+   * 更新post
+   * @param id
+   * @param updatePostDto
+   */
+  async update(id: string, updatePostDto: Omit<UpdatePostDto, 'authorId'>) {
+    // 校验post是否存在
+    const hasPost = await this.prismaService.post.findUnique({
+      where: { id },
+    });
+    if (!hasPost) {
+      throw new NotFoundException('文章不存在');
+    }
+    const { tags, ...other } = updatePostDto;
+    // 跟新post
+    return this.prismaService.post.update({
+      where: { id },
+      data: {
+        ...other,
+        tags: {
+          connect: tags.map((tagId) => ({ id: tagId })),
+        },
+      },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+  /**
+   * 删除博客文章
+   * @param id
+   */
+  async remove(id: string) {
+    const hasPost = await this.prismaService.post.findUnique({
+      where: { id },
+    });
+    if (!hasPost) {
+      throw new NotFoundException('文章不存在');
+    }
+    return this.prismaService.post.delete({
+      where: { id },
+    });
   }
 }

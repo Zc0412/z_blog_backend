@@ -54,13 +54,24 @@ export class PostController {
     return this.postService.findOne(id);
   }
 
+  @ApiOperation({
+    summary: '更新博客文章',
+  })
+  @ApiBearerAuth()
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postService.update(+id, updatePostDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updatePostDto: Omit<UpdatePostDto, 'authorId'>,
+  ) {
+    return this.postService.update(id, updatePostDto);
   }
 
+  @ApiOperation({
+    summary: '删除博客文章',
+  })
+  @ApiBearerAuth()
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postService.remove(+id);
+  async remove(@Param('id') id: string) {
+    return this.postService.remove(id);
   }
 }
