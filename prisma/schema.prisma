@@ -13,8 +13,8 @@ model User {
   avatar    String?
   password  String
   role      Role     @default(USER)
-  createdAt DateTime @default(now())
   userName  String
+  createdAt DateTime @default(now())
   profile   String?
   posts     Post[]
 }
@@ -63,18 +63,19 @@ model Tag {
 }
 
 model Comment {
-  id        String    @id @default(uuid())
-  nickName  String
-  email     String
-  content   String
-  url       String
-  userAgent String?
-  createAt  DateTime  @default(now())
-  parentId  String?
-  postId    String
-  parent    Comment?  @relation("CommentChildren", fields: [parentId], references: [id])
-  children  Comment[] @relation("CommentChildren")
-  post      Post      @relation(fields: [postId], references: [id])
+  id            String    @id @default(uuid())
+  nickName      String
+  email         String
+  content       String
+  url           String
+  userAgent     String?
+  createAt      DateTime  @default(now())
+  parentId      String?
+  postId        String
+  isAuthorReply Boolean   @default(false)
+  parent        Comment?  @relation("CommentChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children      Comment[] @relation("CommentChildren")
+  post          Post      @relation(fields: [postId], references: [id])
 
   @@index([parentId], map: "Comment_parentId_fkey")
   @@index([postId], map: "Comment_postId_fkey")
