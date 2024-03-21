@@ -16,9 +16,9 @@ export class TransformInterceptor implements NestInterceptor {
     // console.log(ctx);
     // 格式化相应数据
     return next.handle().pipe(
-      map((data) => {
+      map((data = null) => {
         const message = data?.message || 'success';
-        if (data.data) {
+        if (data && data.data) {
           return {
             ...data,
             message,

@@ -3,11 +3,9 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Req,
-  Ip,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
@@ -25,12 +23,16 @@ export class CommentController {
   })
   @SkipAuth()
   @Post()
-  create(
+  async create(
     @Body() createCommentDto: CreateCommentDto,
     @Req() req: Request,
-    @Ip() ip: string,
   ) {
-    return this.commentService.create(createCommentDto);
+    // UA
+    const userAgent = req.headers['user-agent'];
+    return await this.commentService.create({
+      ...createCommentDto,
+      userAgent,
+    });
   }
 
   @ApiOperation({

@@ -1,4 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { UAParser } from 'ua-parser-js';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { PrismaService } from '../shared/prisma/prisma.service';
 
@@ -11,7 +13,9 @@ export class CommentService {
    * @param createCommentDto
    */
   async create(createCommentDto: CreateCommentDto) {
-    const { parentId, ...other } = createCommentDto;
+    const { parentId, userAgent, ...other } = createCommentDto;
+    // JsonObject
+    const ua = UAParser(userAgent) as unknown as Prisma.JsonObject;
     // 评论校验文章是否存在
     const hasPost = await this.prismaService.post.findUnique({
       where: { id: createCommentDto.postId },
@@ -22,7 +26,7 @@ export class CommentService {
     // 未传递父级ID，直接评论
     if (!parentId) {
       return this.prismaService.comment.create({
-        data: createCommentDto,
+        data: { ...other, userAgent: ua },
       });
     } else {
       // 传递了父级ID，校验ID是否存在
@@ -34,7 +38,7 @@ export class CommentService {
       }
       // 存在添加子评论
       return this.prismaService.comment.create({
-        data: { ...other, parentId },
+        data: { ...other, parentId, userAgent: ua },
       });
     }
   }

@@ -1,4 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { UAParser } from 'ua-parser-js';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PrismaService } from '../shared/prisma/prisma.service';
@@ -52,9 +54,10 @@ export class PostService {
 
   /**
    * 查询博客文章
-   * @param id
+   * @param findOneDto
    */
-  async findOne(id: string) {
+  async findOne(findOneDto: { id: string; userAgent: string }) {
+    const { id, userAgent } = findOneDto;
     const post = await this.prismaService.post.findUnique({
       where: { id },
     });
@@ -62,6 +65,11 @@ export class PostService {
     if (!post) {
       throw new NotFoundException('文章不存在');
     }
+    // JsonObject
+    const ua = UAParser(userAgent) as unknown as Prisma.JsonObject;
+    await this.prismaService.visit.create({
+      data: { postId: id, userAgent: ua },
+    });
     // 阅读数+1
     return this.prismaService.post.update({
       where: { id },

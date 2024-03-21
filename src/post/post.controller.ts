@@ -50,8 +50,9 @@ export class PostController {
   })
   @SkipAuth()
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postService.findOne(id);
+  findOne(@Param('id') id: string, @Req() req: Request) {
+    const userAgent = req.headers['user-agent'];
+    return this.postService.findOne({ id, userAgent });
   }
 
   @ApiOperation({

@@ -42,7 +42,7 @@ model Post {
 model Visit {
   id        String   @id @default(uuid())
   postId    String
-  userAgent String?
+  userAgent Json?
   visitedAt DateTime @default(now())
   post      Post     @relation(fields: [postId], references: [id])
 
@@ -68,7 +68,7 @@ model Comment {
   email         String
   content       String
   url           String
-  userAgent     String?
+  userAgent     Json?
   createAt      DateTime  @default(now())
   parentId      String?
   postId        String
